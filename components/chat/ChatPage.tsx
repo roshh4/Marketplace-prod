@@ -43,8 +43,10 @@ const ChatPage: React.FC<ChatPageProps> = ({ chatId, onClose }) => {
   }
 
   return (
-    <div className="fixed right-0 top-0 h-full w-full md:w-[420px] bg-gradient-to-b from-[#081028] to-[#04101f] z-50 shadow-2xl border-l border-white/10">
-      <div className="p-4 flex items-center gap-3 border-b border-white/6">
+    <div className="fixed right-0 top-0 h-full w-full md:w-[420px] bg-gradient-to-b from-[#081028] to-[#04101f] z-50 shadow-2xl border-l border-white/10 rounded-l-3xl" style={{
+      boxShadow: '0 0 60px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(255, 255, 255, 0.03), 0 8px 32px rgba(0, 0, 0, 0.2)'
+    }}>
+      <div className="p-4 flex items-center gap-3 border-b border-white/6 rounded-tl-3xl">
         <div className="text-lg font-semibold">Chat</div>
         <div className="text-sm opacity-70">
           {product?.title}
@@ -56,7 +58,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ chatId, onClose }) => {
         </div>
       </div>
 
-      <div ref={ref} className="p-4 overflow-auto h-[calc(100vh-140px)] space-y-3">
+      <div ref={ref} className="p-4 overflow-auto h-[calc(100vh-160px)] space-y-3">
         {/* Purchase Request Notifications */}
         {pendingRequests.map((request) => (
           <div key={request.id} className="bg-green-500/20 border border-green-500/30 rounded-lg p-3">
@@ -98,7 +100,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ chatId, onClose }) => {
         ))}
       </div>
 
-      <div className="p-4 border-t border-white/6 flex gap-2">
+      <div className="p-4 border-t border-white/6 flex gap-2 rounded-bl-3xl" style={{ marginBottom: '8px' }}>
         <input 
           value={text} 
           onChange={(e) => setText(e.target.value)} 
