@@ -12,11 +12,20 @@ import ChatPage from '@/components/chat/ChatPage'
 export default function Home() {
   const [route, setRoute] = useState<string>("/login")
   const [routePayload, setRoutePayload] = useState<any>(null)
+  const [activeChat, setActiveChat] = useState<string | null>(null)
   
   const go = (r: string, payload?: any) => {
     setRoute(r)
     setRoutePayload(payload)
     window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const openChat = (chatId: string) => {
+    setActiveChat(chatId)
+  }
+
+  const closeChat = () => {
+    setActiveChat(null)
   }
 
   return (
@@ -34,7 +43,7 @@ export default function Home() {
         )}
         {route === "/product" && (
           <motion.div key="product" initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -40, opacity: 0 }}>
-            <ProductFull productId={routePayload} onBack={() => go("/marketplace")} onOpenChat={(chatId) => go("/chat", chatId)} />
+            <ProductFull productId={routePayload} onBack={() => go("/marketplace")} onOpenChat={openChat} />
           </motion.div>
         )}
         {route === "/list-item" && (
@@ -44,13 +53,15 @@ export default function Home() {
         )}
         {route === "/profile" && (
           <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <Profile onOpenChat={(chatId) => go("/chat", chatId)} onBack={() => go("/marketplace")} />
+            <Profile onOpenChat={openChat} onBack={() => go("/marketplace")} />
           </motion.div>
         )}
-        {route === "/chat" && (
-          <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ChatPage chatId={routePayload} onClose={() => go("/marketplace")} />
-          </motion.div>
+      </AnimatePresence>
+
+      {/* Chat Overlay */}
+      <AnimatePresence>
+        {activeChat && (
+          <ChatPage chatId={activeChat} onClose={closeChat} />
         )}
       </AnimatePresence>
     </div>

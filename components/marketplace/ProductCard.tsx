@@ -25,7 +25,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen, isFavorited,
   return (
     <motion.div 
       whileHover={{ scale: 1.02, y: -6 }} 
-      className={`rounded-xl overflow-hidden bg-white/3 border border-white/3 p-3 cursor-pointer relative ${product.status === 'sold' ? 'opacity-60' : ''}`}
+      className={`rounded-xl overflow-hidden bg-white/3 p-3 cursor-pointer relative ${product.status === 'sold' ? 'opacity-60' : ''}`}
+      style={{ border: '1px solid rgb(50, 56, 68)' }}
       onClick={onOpen}
     >
       <div className="h-36 rounded-md overflow-hidden mb-2 bg-black/20 grid place-items-center">
