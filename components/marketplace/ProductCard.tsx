@@ -25,21 +25,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen, isFavorited,
   return (
     <motion.div 
       whileHover={{ scale: 1.02, y: -6 }} 
-      className={`rounded-xl overflow-hidden bg-white/3 p-3 cursor-pointer relative ${product.status === 'sold' ? 'opacity-60' : ''}`}
-      style={{ border: '1px solid rgb(106, 113, 126)' }}
+      className={`rounded-xl overflow-hidden bg-white/3 p-4 cursor-pointer relative ${product.status === 'sold' ? 'opacity-60' : ''}`}
+      style={{ border: '1px solid rgb(50, 56, 68)' }}
       onClick={onOpen}
     >
-      <div className="h-36 rounded-md overflow-hidden mb-2 bg-black/20 grid place-items-center">
+      <div className="h-56 rounded-md overflow-hidden mb-3 bg-black/20 grid place-items-center">
         <img src={product.images[0]} alt={product.title} className="h-full w-full object-cover" />
       </div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="font-semibold text-sm">{product.title}</div>
+          <div className="font-semibold text-sm mb-1">{product.title}</div>
           <div className="text-xs opacity-70">{product.category}</div>
         </div>
         <div className="text-sm font-bold">₹{product.price}</div>
       </div>
-      <div className="mt-2 flex items-center justify-between text-xs opacity-80">
+      <div className="flex items-center justify-between text-xs opacity-80">
         <div className="flex items-center gap-2">
           <div className="h-6 w-6 rounded-full bg-white/10 grid place-items-center text-xs">S</div>
           <div>Seller</div>
@@ -61,7 +61,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen, isFavorited,
       </div>
       
       {product.status === 'sold' && (
-        <div className="absolute bottom-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+        <div className="absolute bottom-3 right-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
           Being sold
         </div>
       )}
