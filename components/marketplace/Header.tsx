@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ query, setQuery, onNavigate }) => {
   }, [])
 
   return (
-    <div ref={headerRef} className="sticky top-0 z-40 bg-white/3 backdrop-blur-md" style={{ borderBottom: '1px solid rgb(50, 56, 68)' }}>
+    <div ref={headerRef} className="sticky top-0 z-40 bg-white/3 backdrop-blur-md" style={{ borderBottom: '1px solid rgb(134, 139, 156)' }}>
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
         <div>
           <div className="text-xl font-bold">College Marketplace</div>
