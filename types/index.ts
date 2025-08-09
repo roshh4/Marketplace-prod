@@ -9,6 +9,7 @@ export type Product = {
   tags: string[]
   sellerId: string
   postedAt: string // ISO
+  status: "available" | "requested" | "sold"
 }
 
 export type UserType = {
@@ -31,4 +32,13 @@ export type Chat = {
   productId: string
   participants: string[] // buyer, seller
   messages: Message[]
+}
+
+export type PurchaseRequest = {
+  id: string
+  productId: string
+  buyerId: string
+  sellerId: string
+  status: "pending" | "accepted" | "declined"
+  createdAt: string // ISO
 }

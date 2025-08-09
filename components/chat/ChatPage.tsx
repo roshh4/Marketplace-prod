@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { X, Send } from 'lucide-react'
+import { X, Send, Check, X as XIcon } from 'lucide-react'
 import { useMarketplace } from '@/components/context/MarketplaceContext'
-import { Chat } from '@/types'
+import { Chat, PurchaseRequest } from '@/types'
 
 interface ChatPageProps {
   chatId: string
@@ -11,7 +11,7 @@ interface ChatPageProps {
 }
 
 const ChatPage: React.FC<ChatPageProps> = ({ chatId, onClose }) => {
-  const { chats, products, user, pushMessage } = useMarketplace()
+  const { chats, products, user, pushMessage, purchaseRequests, updatePurchaseRequest } = useMarketplace()
   const chat = chats.find((c: Chat) => c.id === chatId)
   const [text, setText] = useState("")
   const ref = useRef<HTMLDivElement | null>(null)
@@ -21,6 +21,11 @@ const ChatPage: React.FC<ChatPageProps> = ({ chatId, onClose }) => {
   }, [chat?.messages?.length])
 
   if (!chat) return <div className="p-8">Chat not found</div>
+
+  const product = products.find((p) => p.id === chat.productId)
+  const pendingRequests = purchaseRequests.filter(
+    (pr) => pr.productId === chat.productId && pr.status === "pending"
+  )
 
   const send = () => {
     if (!text.trim()) return
@@ -33,12 +38,16 @@ const ChatPage: React.FC<ChatPageProps> = ({ chatId, onClose }) => {
     }, 900 + Math.random() * 1200)
   }
 
+  const handlePurchaseRequest = (requestId: string, status: "accepted" | "declined") => {
+    updatePurchaseRequest(requestId, status)
+  }
+
   return (
-    <div className="fixed right-0 top-0 h-full w-full md:w-[420px] bg-gradient-to-b from-[#081028] to-[#04101f] z-50 shadow-2xl">
+    <div className="fixed right-0 top-0 h-full w-full md:w-[420px] bg-gradient-to-b from-[#081028] to-[#04101f] z-50 shadow-2xl border-l border-white/10">
       <div className="p-4 flex items-center gap-3 border-b border-white/6">
         <div className="text-lg font-semibold">Chat</div>
         <div className="text-sm opacity-70">
-          {products.find((p) => p.id === chat.productId)?.title}
+          {product?.title}
         </div>
         <div className="ml-auto flex gap-2">
           <button onClick={onClose} className="p-2 rounded-md bg-white/6">
@@ -48,6 +57,35 @@ const ChatPage: React.FC<ChatPageProps> = ({ chatId, onClose }) => {
       </div>
 
       <div ref={ref} className="p-4 overflow-auto h-[calc(100vh-140px)] space-y-3">
+        {/* Purchase Request Notifications */}
+        {pendingRequests.map((request) => (
+          <div key={request.id} className="bg-green-500/20 border border-green-500/30 rounded-lg p-3">
+            <div className="text-sm font-semibold text-green-400 mb-2">
+              Purchase Request
+            </div>
+            <div className="text-xs opacity-80 mb-3">
+              {user?.name || "User"} wants to buy this product. Will you accept?
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handlePurchaseRequest(request.id, "accepted")}
+                className="flex-1 py-1 px-2 bg-green-500 text-white rounded text-xs flex items-center justify-center gap-1"
+              >
+                <Check size={12} />
+                Accept
+              </button>
+              <button
+                onClick={() => handlePurchaseRequest(request.id, "declined")}
+                className="flex-1 py-1 px-2 bg-red-500 text-white rounded text-xs flex items-center justify-center gap-1"
+              >
+                <XIcon size={12} />
+                Decline
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* Chat Messages */}
         {chat.messages.map((m) => (
           <div key={m.id} className={`flex ${m.from === user?.id ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[80%] p-3 rounded-xl ${m.from === user?.id ? "bg-indigo-500 text-white" : "bg-white/8"}`}>

@@ -7,13 +7,25 @@ import { Product } from '@/types'
 interface ProductCardProps {
   product: Product
   onOpen: () => void
+  isFavorited: boolean
+  onToggleFavorite: () => void
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen, isFavorited, onToggleFavorite }) => {
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onToggleFavorite()
+  }
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    // Share functionality can be added here
+  }
+
   return (
     <motion.div 
       whileHover={{ scale: 1.02, y: -6 }} 
-      className="rounded-xl overflow-hidden bg-white/3 border border-white/6 p-3 cursor-pointer" 
+      className={`rounded-xl overflow-hidden bg-white/3 border border-white/3 p-3 cursor-pointer relative ${product.status === 'sold' ? 'opacity-60' : ''}`}
       onClick={onOpen}
     >
       <div className="h-36 rounded-md overflow-hidden mb-2 bg-black/20 grid place-items-center">
@@ -32,14 +44,26 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen }) => {
           <div>Seller</div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="p-1 rounded-md">
-            <Heart size={14} />
+          <button 
+            onClick={handleFavoriteClick}
+            className={`p-1 rounded-md transition-colors ${isFavorited ? 'text-red-400' : 'hover:text-red-400'}`}
+          >
+            <Heart size={14} fill={isFavorited ? 'currentColor' : 'none'} />
           </button>
-          <button className="p-1 rounded-md">
+          <button 
+            onClick={handleShareClick}
+            className="p-1 rounded-md hover:text-blue-400 transition-colors"
+          >
             <Share2 size={14} />
           </button>
         </div>
       </div>
+      
+      {product.status === 'sold' && (
+        <div className="absolute bottom-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+          Being sold
+        </div>
+      )}
     </motion.div>
   )
 }

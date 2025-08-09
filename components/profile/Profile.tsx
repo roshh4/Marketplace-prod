@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import { ArrowLeft, Upload, Camera } from 'lucide-react'
 import { useMarketplace } from '@/components/context/MarketplaceContext'
 import { Product, Chat } from '@/types'
 import GlassCard from '@/components/ui/GlassCard'
@@ -12,11 +12,13 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ onOpenChat, onBack }) => {
-  const { user, updateUser, products, chats } = useMarketplace()
+  const { user, updateUser, products, chats, favorites } = useMarketplace()
   const [editing, setEditing] = useState(false)
+  const [activeTab, setActiveTab] = useState<'listings' | 'favorites'>('listings')
   const [name, setName] = useState(user?.name || "")
   const [year, setYear] = useState(user?.year || "")
   const [dept, setDept] = useState(user?.department || "")
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setName(user?.name || "")
@@ -25,7 +27,24 @@ const Profile: React.FC<ProfileProps> = ({ onOpenChat, onBack }) => {
   }, [user])
 
   const myListings = products.filter((p: Product) => p.sellerId === user?.id)
+  const favoriteProducts = products.filter((p: Product) => favorites.includes(p.id))
   const purchased: Product[] = []
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string
+        updateUser({ avatar: imageUrl })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const triggerImageUpload = () => {
+    fileInputRef.current?.click()
+  }
 
   return (
     <div className="min-h-screen py-8">
@@ -41,18 +60,48 @@ const Profile: React.FC<ProfileProps> = ({ onOpenChat, onBack }) => {
           <div>
             <GlassCard>
               <div className="flex flex-col items-center gap-3">
-                <div className="h-24 w-24 rounded-full bg-white/6 grid place-items-center">
-                  {user?.name?.charAt(0) || "U"}
+                <div className="relative">
+                  {user?.avatar ? (
+                    <img 
+                      src={user.avatar} 
+                      alt={user.name} 
+                      className="h-24 w-24 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-24 w-24 rounded-full bg-white/6 grid place-items-center text-2xl font-bold">
+                      {user?.name?.charAt(0) || "U"}
+                    </div>
+                  )}
+                  <button
+                    onClick={triggerImageUpload}
+                    className="absolute -bottom-1 -right-1 p-2 bg-indigo-500 rounded-full hover:bg-indigo-600 transition-colors"
+                  >
+                    <Camera size={14} />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
                 </div>
                 {!editing ? (
                   <div className="font-semibold">{user?.name}</div>
                 ) : (
-                  <input value={name} onChange={(e) => setName(e.target.value)} className="p-2 mt-2 bg-transparent border rounded-md w-full" />
+                  <input 
+                    value={name} 
+                    onChange={(e) => setName(e.target.value)} 
+                    className="p-2 mt-2 bg-transparent border rounded-md w-full text-center" 
+                  />
                 )}
                 <div className="text-xs opacity-70">{user?.year} • {user?.department}</div>
                 {editing ? (
                   <div className="mt-3 flex gap-2">
-                    <button onClick={() => { updateUser({ name, year, department: dept }); setEditing(false); }} className="py-2 px-3 rounded-md bg-gradient-to-r from-indigo-500 to-cyan-400">
+                    <button 
+                      onClick={() => { updateUser({ name, year, department: dept }); setEditing(false); }} 
+                      className="py-2 px-3 rounded-md bg-gradient-to-r from-indigo-500 to-cyan-400"
+                    >
                       Save
                     </button>
                     <button onClick={() => setEditing(false)} className="py-2 px-3 rounded-md bg-white/6">
@@ -90,21 +139,51 @@ const Profile: React.FC<ProfileProps> = ({ onOpenChat, onBack }) => {
 
           <div className="md:col-span-2">
             <div className="flex items-center gap-4 mb-4">
-              <div className="text-lg font-semibold">My Listings</div>
-              <div className="text-sm opacity-70">{myListings.length}</div>
+              <button
+                onClick={() => setActiveTab('listings')}
+                className={`text-lg font-semibold transition-colors ${activeTab === 'listings' ? 'text-white' : 'text-gray-400'}`}
+              >
+                My Listings ({myListings.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('favorites')}
+                className={`text-lg font-semibold transition-colors ${activeTab === 'favorites' ? 'text-white' : 'text-gray-400'}`}
+              >
+                Favorites ({favoriteProducts.length})
+              </button>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {myListings.length === 0 ? (
-                <div className="col-span-full p-6 text-center opacity-80">You have no listings yet</div>
+              {activeTab === 'listings' ? (
+                myListings.length === 0 ? (
+                  <div className="col-span-full p-6 text-center opacity-80">You have no listings yet</div>
+                ) : (
+                  myListings.map((p) => (
+                    <div key={p.id} className="p-3 bg-white/3 rounded-md">
+                      <img src={p.images[0]} className="h-28 w-full object-cover rounded-md mb-2" />
+                      <div className="font-semibold">{p.title}</div>
+                      <div className="text-xs opacity-70">₹{p.price}</div>
+                      {p.status === 'sold' && (
+                        <div className="text-xs text-red-400 mt-1">Sold</div>
+                      )}
+                    </div>
+                  ))
+                )
               ) : (
-                myListings.map((p) => (
-                  <div key={p.id} className="p-3 bg-white/3 rounded-md">
-                    <img src={p.images[0]} className="h-28 w-full object-cover rounded-md mb-2" />
-                    <div className="font-semibold">{p.title}</div>
-                    <div className="text-xs opacity-70">₹{p.price}</div>
-                  </div>
-                ))
+                favoriteProducts.length === 0 ? (
+                  <div className="col-span-full p-6 text-center opacity-80">You have no favorites yet</div>
+                ) : (
+                  favoriteProducts.map((p) => (
+                    <div key={p.id} className="p-3 bg-white/3 rounded-md">
+                      <img src={p.images[0]} className="h-28 w-full object-cover rounded-md mb-2" />
+                      <div className="font-semibold">{p.title}</div>
+                      <div className="text-xs opacity-70">₹{p.price}</div>
+                      {p.status === 'sold' && (
+                        <div className="text-xs text-red-400 mt-1">Sold</div>
+                      )}
+                    </div>
+                  ))
+                )
               )}
             </div>
           </div>

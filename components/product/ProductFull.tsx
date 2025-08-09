@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, Heart, Share2 } from 'lucide-react'
+import { ArrowLeft, Heart, Share2, Trash2 } from 'lucide-react'
 import { useMarketplace } from '@/components/context/MarketplaceContext'
 import { Product } from '@/types'
 import GlassCard from '@/components/ui/GlassCard'
@@ -13,15 +13,46 @@ interface ProductFullProps {
 }
 
 const ProductFull: React.FC<ProductFullProps> = ({ productId, onBack, onOpenChat }) => {
-  const { products, addChatIfMissing, user } = useMarketplace()
+  const { 
+    products, 
+    addChatIfMissing, 
+    user, 
+    createPurchaseRequest,
+    updateProductStatus,
+    setProducts,
+    favorites,
+    toggleFavorite
+  } = useMarketplace()
   const prod = products.find((p: Product) => p.id === productId) as Product | undefined
   const [mainIndex, setMainIndex] = useState(0)
+  const [showRequestSent, setShowRequestSent] = useState(false)
 
   if (!prod) return <div className="p-8">Product not found</div>
+
+  const isOwner = prod.sellerId === user?.id
+  const isFavorited = favorites.includes(prod.id)
 
   const startChat = () => {
     const c = addChatIfMissing(prod.id, [user?.id || "guest", prod.sellerId])
     onOpenChat(c.id)
+  }
+
+  const handleRequestItem = () => {
+    if (!user?.id) return
+    createPurchaseRequest(prod.id, user.id, prod.sellerId)
+    setShowRequestSent(true)
+    setTimeout(() => setShowRequestSent(false), 3000)
+  }
+
+  const handleRemoveListing = () => {
+    if (confirm("Are you sure you want to remove this listing?")) {
+      setProducts(prev => prev.filter(p => p.id !== prod.id))
+      onBack()
+    }
+  }
+
+  const handleToggleFavorite = () => {
+    toggleFavorite(prod.id)
   }
 
   return (
@@ -36,8 +67,11 @@ const ProductFull: React.FC<ProductFullProps> = ({ productId, onBack, onOpenChat
             <div className="text-sm opacity-70">₹{prod.price} • {prod.condition}</div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-md bg-white/6">
-              <Heart />
+            <button 
+              onClick={handleToggleFavorite}
+              className={`p-2 rounded-md transition-colors ${isFavorited ? 'text-red-400' : 'bg-white/6'}`}
+            >
+              <Heart size={20} fill={isFavorited ? 'currentColor' : 'none'} />
             </button>
             <button className="p-2 rounded-md bg-white/6">
               <Share2 />
@@ -75,13 +109,35 @@ const ProductFull: React.FC<ProductFullProps> = ({ productId, onBack, onOpenChat
                 </div>
                 <div className="text-sm opacity-80">Posted: {new Date(prod.postedAt).toLocaleString()}</div>
                 <div className="flex gap-2">
-                  <button onClick={() => alert('Buy flow simulated')} className="flex-1 py-2 rounded-md bg-gradient-to-r from-emerald-500 to-green-400 font-semibold">
-                    Buy Now
-                  </button>
+                  {!isOwner && prod.status === "available" ? (
+                    <button 
+                      onClick={handleRequestItem} 
+                      className="flex-1 py-2 rounded-md bg-gradient-to-r from-emerald-500 to-green-400 font-semibold"
+                    >
+                      Request Item
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => alert('Item not available')} 
+                      className="flex-1 py-2 rounded-md bg-gray-500 font-semibold cursor-not-allowed"
+                      disabled
+                    >
+                      {prod.status === "sold" ? "Sold" : "Requested"}
+                    </button>
+                  )}
                   <button onClick={startChat} className="py-2 px-3 rounded-md bg-white/6">
                     Chat
                   </button>
                 </div>
+                {isOwner && (
+                  <button 
+                    onClick={handleRemoveListing}
+                    className="w-full py-2 rounded-md bg-red-500 hover:bg-red-600 font-semibold transition-colors"
+                  >
+                    <Trash2 size={16} className="inline mr-2" />
+                    Remove Listing
+                  </button>
+                )}
               </div>
             </GlassCard>
 
@@ -91,6 +147,12 @@ const ProductFull: React.FC<ProductFullProps> = ({ productId, onBack, onOpenChat
             </div>
           </div>
         </div>
+
+        {showRequestSent && (
+          <div className="fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50">
+            Request sent to seller!
+          </div>
+        )}
       </div>
     </div>
   )

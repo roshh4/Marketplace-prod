@@ -14,7 +14,7 @@ interface MarketplaceProps {
 }
 
 const Marketplace: React.FC<MarketplaceProps> = ({ onNavigate }) => {
-  const { products, setProducts } = useMarketplace()
+  const { products, setProducts, favorites, toggleFavorite } = useMarketplace()
   const [query, setQuery] = useState("")
   const [filtered, setFiltered] = useState<Product[]>(products)
 
@@ -38,6 +38,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onNavigate }) => {
         tags: ["campus", "student"],
         sellerId: "seller_1",
         postedAt: nowIso(),
+        status: "available" // available, requested, sold
       }))
       setProducts(sample)
     }
@@ -53,12 +54,18 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onNavigate }) => {
           <div className="text-sm opacity-80">Results: {filtered.length}</div>
         </div>
 
-        <motion.div layout className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <motion.div layout className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {filtered.length === 0 ? (
             <div className="col-span-full p-8 text-center opacity-80">No products found — try another search.</div>
           ) : (
             filtered.map((p) => (
-              <ProductCard key={p.id} product={p} onOpen={() => onNavigate("/product", p.id)} />
+              <ProductCard 
+                key={p.id} 
+                product={p} 
+                onOpen={() => onNavigate("/product", p.id)}
+                isFavorited={favorites.includes(p.id)}
+                onToggleFavorite={() => toggleFavorite(p.id)}
+              />
             ))
           )}
         </motion.div>
