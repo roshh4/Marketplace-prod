@@ -51,7 +51,17 @@ const ListItemPage: React.FC<ListItemPageProps> = ({ onDone }) => {
     if (!title || !price || images.length === 0) return alert("Please enter title, price and at least one image")
     setLoading(true)
     await new Promise((r) => setTimeout(r, 800))
-    addProduct({ title, price, description: desc, images, condition, category, tags, sellerId: user?.id || "seller_demo" })
+    addProduct({ 
+      title, 
+      price, 
+      description: desc, 
+      images, 
+      condition, 
+      category, 
+      tags, 
+      sellerId: user?.id || "seller_demo",
+      status: "available"
+    })
     setLoading(false)
     onDone()
   }
