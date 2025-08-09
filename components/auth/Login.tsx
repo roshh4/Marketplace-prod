@@ -16,6 +16,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const { updateUser } = useMarketplace()
   const [loading, setLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const [showGmailForm, setShowGmailForm] = useState(false)
+  const [otpSent, setOtpSent] = useState(false)
+  const [gmailData, setGmailData] = useState({
+    email: '',
+    password: '',
+    otp: ''
+  })
   const [formData, setFormData] = useState({
     fullName: '',
     collegeName: 'Rajalakshmi Engineering College',
@@ -26,8 +33,32 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const collegeName = "Rajalakshmi Engineering College"
 
-  const handleSignInClick = () => {
-    setShowForm(true)
+  const handleSignInClick = (provider: string) => {
+    if (provider === 'gmail') {
+      setShowGmailForm(true)
+    } else {
+      setShowForm(true)
+    }
+  }
+
+  const handleGmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!otpSent) {
+      // Send OTP
+      setLoading(true)
+      setTimeout(() => {
+        setOtpSent(true)
+        setLoading(false)
+      }, 1000)
+    } else {
+      // Verify OTP
+      setLoading(true)
+      setTimeout(() => {
+        setShowGmailForm(false)
+        setShowForm(true)
+        setLoading(false)
+      }, 1000)
+    }
   }
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -54,6 +85,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }))
   }
 
+  const handleGmailInputChange = (field: string, value: string) => {
+    setGmailData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -66,7 +104,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </motion.p>
           
           <AnimatePresence mode="wait">
-            {!showForm && (
+            {!showForm && !showGmailForm && (
               <motion.div
                 key="signin"
                 initial={{ opacity: 1 }}
@@ -78,9 +116,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <p className="font-semibold">Sign in</p>
                     <div className="flex gap-3">
                       {[
-                        { name: "Google", onClick: handleSignInClick },
-                        { name: "Microsoft", onClick: handleSignInClick },
-                        { name: "Gmail", onClick: handleSignInClick },
+                        { name: "Google", onClick: () => handleSignInClick("google") },
+                        { name: "Microsoft", onClick: () => handleSignInClick("microsoft") },
+                        { name: "Gmail", onClick: () => handleSignInClick("gmail") },
                       ].map((p) => (
                         <button
                           key={p.name}
@@ -92,7 +130,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     </div>
                     <div className="pt-2">
                       <button
-                        onClick={handleSignInClick}
+                        onClick={() => handleSignInClick("demo")}
                         className="w-full py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-400 font-semibold">
                         Continue as Demo User
                       </button>
@@ -105,7 +143,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
         
         <AnimatePresence mode="wait">
-          {!showForm ? (
+          {!showForm && !showGmailForm ? (
             <motion.div 
               key="tour"
               initial={{ scale: 0.98, opacity: 0 }} 
@@ -123,6 +161,72 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <li>• Real-time chat simulation with sellers.</li>
                     <li>• List items with drag & drop upload.</li>
                   </ul>
+                </div>
+              </div>
+            </motion.div>
+          ) : showGmailForm ? (
+            <motion.div
+              key="gmail-form"
+              initial={{ scale: 0.98, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.98, opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full"
+            >
+              <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+                <div className="p-6 bg-gradient-to-b from-white/3 to-transparent">
+                  <h3 className="text-lg font-bold mb-4">Gmail Login</h3>
+                  <form onSubmit={handleGmailSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Email ID</label>
+                      <input
+                        type="email"
+                        value={gmailData.email}
+                        onChange={(e) => handleGmailInputChange('email', e.target.value)}
+                        className="w-full p-3 bg-white/10 rounded-lg border border-white/20 focus:border-indigo-400 focus:outline-none transition-colors text-white placeholder-gray-300"
+                        placeholder="Enter your Gmail address"
+                        required
+                      />
+                    </div>
+                    
+                    {!otpSent && (
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">Password</label>
+                        <input
+                          type="password"
+                          value={gmailData.password}
+                          onChange={(e) => handleGmailInputChange('password', e.target.value)}
+                          className="w-full p-3 bg-white/10 rounded-lg border border-white/20 focus:border-indigo-400 focus:outline-none transition-colors text-white placeholder-gray-300"
+                          placeholder="Enter your password"
+                          required
+                        />
+                      </div>
+                    )}
+                    
+                    {otpSent && (
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">OTP Code</label>
+                        <input
+                          type="text"
+                          value={gmailData.otp}
+                          onChange={(e) => handleGmailInputChange('otp', e.target.value)}
+                          className="w-full p-3 bg-white/10 rounded-lg border border-white/20 focus:border-indigo-400 focus:outline-none transition-colors text-white placeholder-gray-300"
+                          placeholder="Enter 6-digit OTP"
+                          maxLength={6}
+                          required
+                        />
+                        <p className="text-xs text-gray-300 mt-1">We've sent a 6-digit code to your email</p>
+                      </div>
+                    )}
+                    
+                    <button
+                      type="submit"
+                      className="w-full py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-400 font-semibold mt-6 hover:from-indigo-600 hover:to-cyan-500 transition-all duration-200"
+                      disabled={loading}
+                    >
+                      {loading ? <Spinner /> : (otpSent ? "Verify" : "Send OTP")}
+                    </button>
+                  </form>
                 </div>
               </div>
             </motion.div>
