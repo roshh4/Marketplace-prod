@@ -25,11 +25,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen, isFavorited,
   return (
     <motion.div 
       whileHover={{ scale: 1.02, y: -6 }} 
-      className={`rounded-xl overflow-hidden bg-white/3 p-4 cursor-pointer relative ${product.status === 'sold' ? 'opacity-60' : ''}`}
+      className={`rounded-xl overflow-hidden bg-white/3 p-2.5 cursor-pointer relative shadow-2xl shadow-black/20 ${product.status === 'sold' ? 'opacity-60' : ''}`}
       style={{ border: '1px solid rgb(50, 56, 68)' }}
       onClick={onOpen}
     >
-      <div className="h-56 rounded-md overflow-hidden mb-3 bg-black/20 grid place-items-center">
+      <div className="h-72 rounded-md overflow-hidden mb-3 bg-black/20 grid place-items-center">
         <img src={product.images[0]} alt={product.title} className="h-full w-full object-cover" />
       </div>
       <div className="flex items-center justify-between mb-2">

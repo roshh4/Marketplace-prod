@@ -54,7 +54,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onNavigate }) => {
           <div className="text-sm opacity-80">Results: {filtered.length}</div>
         </div>
 
-        <motion.div layout className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <motion.div layout className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {filtered.length === 0 ? (
             <div className="col-span-full p-8 text-center opacity-80">No products found — try another search.</div>
           ) : (
