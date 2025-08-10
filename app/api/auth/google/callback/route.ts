@@ -25,20 +25,20 @@ export async function GET(request: NextRequest) {
     // Get user information using access token
     const userInfo = await getGoogleUserInfo(tokenResponse.access_token)
 
-    // Redirect to success page with tokens in URL params (for client-side storage)
+    // Redirect to callback page with tokens in URL params (for client-side storage)
     // In production, consider using secure HTTP-only cookies for sensitive data
-    const successUrl = new URL(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/success`
+    const callbackUrl = new URL(
+      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`
     )
     
     // Add tokens and user info as URL parameters for client-side storage
-    successUrl.searchParams.set('access_token', tokenResponse.access_token)
+    callbackUrl.searchParams.set('access_token', tokenResponse.access_token)
     if (tokenResponse.refresh_token) {
-      successUrl.searchParams.set('refresh_token', tokenResponse.refresh_token)
+      callbackUrl.searchParams.set('refresh_token', tokenResponse.refresh_token)
     }
-    successUrl.searchParams.set('user_info', JSON.stringify(userInfo))
+    callbackUrl.searchParams.set('user_info', JSON.stringify(userInfo))
     
-    const response = NextResponse.redirect(successUrl)
+    const response = NextResponse.redirect(callbackUrl)
 
     return response
 

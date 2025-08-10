@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { ArrowLeft, Heart, Share2, Trash2 } from 'lucide-react'
 import { useMarketplace } from '@/components/context/MarketplaceContext'
 import { Product } from '@/types'
 import GlassCard from '@/components/ui/GlassCard'
+import ShareDropdown from '@/components/ui/ShareDropdown'
 
 interface ProductFullProps {
   productId: string
@@ -26,6 +27,8 @@ const ProductFull: React.FC<ProductFullProps> = ({ productId, onBack, onOpenChat
   const prod = products.find((p: Product) => p.id === productId) as Product | undefined
   const [mainIndex, setMainIndex] = useState(0)
   const [showRequestSent, setShowRequestSent] = useState(false)
+  const [isShareOpen, setIsShareOpen] = useState(false)
+  const shareButtonRef = useRef<HTMLButtonElement>(null)
 
   if (!prod) return <div className="p-8">Product not found</div>
 
@@ -55,6 +58,12 @@ const ProductFull: React.FC<ProductFullProps> = ({ productId, onBack, onOpenChat
     toggleFavorite(prod.id)
   }
 
+  const handleShareClick = () => {
+    setIsShareOpen(!isShareOpen)
+  }
+
+  const productUrl = `${window.location.origin}/product/${prod.id}`
+
   return (
     <div className="min-h-screen">
       <div className="max-w-5xl mx-auto px-4 md:px-8 py-8">
@@ -73,9 +82,22 @@ const ProductFull: React.FC<ProductFullProps> = ({ productId, onBack, onOpenChat
             >
               <Heart size={20} fill={isFavorited ? 'currentColor' : 'none'} />
             </button>
-            <button className="p-2 rounded-md bg-white/6">
-              <Share2 />
-            </button>
+            <div className="relative">
+              <button 
+                ref={shareButtonRef}
+                onClick={handleShareClick}
+                className="p-2 rounded-md bg-white/6"
+              >
+                <Share2 />
+              </button>
+              <ShareDropdown
+                productUrl={productUrl}
+                productTitle={prod.title}
+                isOpen={isShareOpen}
+                onClose={() => setIsShareOpen(false)}
+                triggerRef={shareButtonRef}
+              />
+            </div>
           </div>
         </div>
 

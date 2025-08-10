@@ -1,69 +1,36 @@
 'use client'
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useMarketplace } from '@/components/context/MarketplaceContext'
 import Login from '@/components/auth/Login'
-import Marketplace from '@/components/marketplace/Marketplace'
-import ProductFull from '@/components/product/ProductFull'
-import ListItemPage from '@/components/listing/ListItemPage'
-import Profile from '@/components/profile/Profile'
-import ChatPage from '@/components/chat/ChatPage'
 
 export default function Home() {
-  const [route, setRoute] = useState<string>("/login")
-  const [routePayload, setRoutePayload] = useState<any>(null)
-  const [activeChat, setActiveChat] = useState<string | null>(null)
-  
-  const go = (r: string, payload?: any) => {
-    setRoute(r)
-    setRoutePayload(payload)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+  const { user } = useMarketplace()
+  const router = useRouter()
 
-  const openChat = (chatId: string) => {
-    setActiveChat(chatId)
-  }
+  // Check if user is authenticated and redirect to marketplace
+  useEffect(() => {
+    if (user) {
+      router.push('/marketplace')
+    }
+  }, [user, router])
 
-  const closeChat = () => {
-    setActiveChat(null)
+  // If user is authenticated, show loading while redirecting
+  if (user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#0b1220] to-[#061028] text-white font-sans flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Redirecting to marketplace...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#0b1220] to-[#061028] text-white font-sans">
-      <AnimatePresence mode="wait">
-        {route === "/login" && (
-          <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <Login onLogin={() => go("/marketplace")} />
-          </motion.div>
-        )}
-        {route === "/marketplace" && (
-          <motion.div key="market" initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -40, opacity: 0 }}>
-            <Marketplace onNavigate={go} />
-          </motion.div>
-        )}
-        {route === "/product" && (
-          <motion.div key="product" initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -40, opacity: 0 }}>
-            <ProductFull productId={routePayload} onBack={() => go("/marketplace")} onOpenChat={openChat} />
-          </motion.div>
-        )}
-        {route === "/list-item" && (
-          <motion.div key="list" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -40, opacity: 0 }}>
-            <ListItemPage onDone={() => go("/marketplace")} />
-          </motion.div>
-        )}
-        {route === "/profile" && (
-          <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <Profile onOpenChat={openChat} onBack={() => go("/marketplace")} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Chat Overlay */}
-      <AnimatePresence>
-        {activeChat && (
-          <ChatPage chatId={activeChat} onClose={closeChat} />
-        )}
-      </AnimatePresence>
+      <Login onLogin={() => router.push('/marketplace')} />
     </div>
   )
 }

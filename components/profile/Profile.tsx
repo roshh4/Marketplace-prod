@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { ArrowLeft, Upload, Camera } from 'lucide-react'
+import { ArrowLeft, Upload, Camera, LogOut } from 'lucide-react'
 import { useMarketplace } from '@/components/context/MarketplaceContext'
 import { Product, Chat } from '@/types'
 import GlassCard from '@/components/ui/GlassCard'
+import { useRouter } from 'next/navigation'
 
 interface ProfileProps {
   onOpenChat: (c: string) => void
@@ -12,13 +13,14 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ onOpenChat, onBack }) => {
-  const { user, updateUser, products, chats, favorites } = useMarketplace()
+  const { user, updateUser, setUser, products, chats, favorites } = useMarketplace()
   const [editing, setEditing] = useState(false)
   const [activeTab, setActiveTab] = useState<'listings' | 'favorites'>('listings')
   const [name, setName] = useState(user?.name || "")
   const [year, setYear] = useState(user?.year || "")
   const [dept, setDept] = useState(user?.department || "")
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     setName(user?.name || "")
@@ -44,6 +46,22 @@ const Profile: React.FC<ProfileProps> = ({ onOpenChat, onBack }) => {
 
   const triggerImageUpload = () => {
     fileInputRef.current?.click()
+  }
+
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to logout?')) {
+      // Clear user data from context
+      setUser(null)
+      
+      // Clear localStorage
+      localStorage.removeItem('cm_user_v1')
+      localStorage.removeItem('google_access_token')
+      localStorage.removeItem('google_refresh_token')
+      localStorage.removeItem('google_user_info')
+      
+      // Redirect to login page
+      router.push('/')
+    }
   }
 
   return (
@@ -109,9 +127,18 @@ const Profile: React.FC<ProfileProps> = ({ onOpenChat, onBack }) => {
                     </button>
                   </div>
                 ) : (
-                  <button onClick={() => setEditing(true)} className="mt-3 py-2 px-3 rounded-md bg-white/6">
-                    Edit Profile
-                  </button>
+                  <div className="mt-3 space-y-2">
+                    <button onClick={() => setEditing(true)} className="w-full py-2 px-3 rounded-md bg-white/6 hover:bg-white/10 transition-colors">
+                      Edit Profile
+                    </button>
+                    <button 
+                      onClick={handleLogout} 
+                      className="w-full py-2 px-3 rounded-md bg-red-500/20 hover:bg-red-500/30 transition-colors text-red-400 flex items-center justify-center gap-2"
+                    >
+                      <LogOut size={14} />
+                      Logout
+                    </button>
+                  </div>
                 )}
               </div>
             </GlassCard>

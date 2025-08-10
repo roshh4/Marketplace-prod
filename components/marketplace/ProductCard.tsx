@@ -3,15 +3,25 @@
 import { motion } from 'framer-motion'
 import { Heart, Share2 } from 'lucide-react'
 import { Product } from '@/types'
+import { useRouter } from 'next/navigation'
+import { useState, useRef } from 'react'
+import ShareDropdown from '@/components/ui/ShareDropdown'
 
 interface ProductCardProps {
   product: Product
-  onOpen: () => void
   isFavorited: boolean
   onToggleFavorite: () => void
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen, isFavorited, onToggleFavorite }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, isFavorited, onToggleFavorite }) => {
+  const router = useRouter()
+  const [isShareOpen, setIsShareOpen] = useState(false)
+  const shareButtonRef = useRef<HTMLButtonElement>(null)
+
+  const handleProductClick = () => {
+    router.push(`/product/${product.id}`)
+  }
+  
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onToggleFavorite()
@@ -19,15 +29,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen, isFavorited,
 
   const handleShareClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    // Share functionality can be added here
+    setIsShareOpen(!isShareOpen)
   }
+
+  const productUrl = `${window.location.origin}/product/${product.id}`
 
   return (
     <motion.div 
       whileHover={{ scale: 1.02, y: -6 }} 
       className={`rounded-xl overflow-hidden bg-white/3 p-2.5 cursor-pointer relative shadow-2xl shadow-black/20 ${product.status === 'sold' ? 'opacity-60' : ''}`}
       style={{ border: '1px solid rgb(50, 56, 68)' }}
-      onClick={onOpen}
+      onClick={handleProductClick}
     >
       <div className="h-72 rounded-md overflow-hidden mb-3 bg-black/20 grid place-items-center">
         <img src={product.images[0]} alt={product.title} className="h-full w-full object-cover" />
@@ -51,12 +63,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen, isFavorited,
           >
             <Heart size={14} fill={isFavorited ? 'currentColor' : 'none'} />
           </button>
-          <button 
-            onClick={handleShareClick}
-            className="p-1 rounded-md hover:text-blue-400 transition-colors"
-          >
-            <Share2 size={14} />
-          </button>
+          <div className="relative">
+            <button 
+              ref={shareButtonRef}
+              onClick={handleShareClick}
+              className="p-1 rounded-md hover:text-blue-400 transition-colors"
+            >
+              <Share2 size={14} />
+            </button>
+            <ShareDropdown
+              productUrl={productUrl}
+              productTitle={product.title}
+              isOpen={isShareOpen}
+              onClose={() => setIsShareOpen(false)}
+              triggerRef={shareButtonRef}
+            />
+          </div>
         </div>
       </div>
       

@@ -10,10 +10,10 @@ import ProductCard from './ProductCard'
 import FloatingActions from './FloatingActions'
 
 interface MarketplaceProps {
-  onNavigate: (r: string, p?: any) => void
+  onOpenChat: (chatId: string) => void
 }
 
-const Marketplace: React.FC<MarketplaceProps> = ({ onNavigate }) => {
+const Marketplace: React.FC<MarketplaceProps> = ({ onOpenChat }) => {
   const { products, setProducts, favorites, toggleFavorite } = useMarketplace()
   const [query, setQuery] = useState("")
   const [filtered, setFiltered] = useState<Product[]>(products)
@@ -46,7 +46,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onNavigate }) => {
 
   return (
     <div className="min-h-screen pb-24">
-      <Header query={query} setQuery={setQuery} onNavigate={onNavigate} />
+              <Header query={query} setQuery={setQuery} />
 
       <main className="max-w-7xl mx-auto px-4 md:px-8 pt-8">
         <div className="flex items-center justify-between mb-6">
@@ -62,7 +62,6 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onNavigate }) => {
               <ProductCard 
                 key={p.id} 
                 product={p} 
-                onOpen={() => onNavigate("/product", p.id)}
                 isFavorited={favorites.includes(p.id)}
                 onToggleFavorite={() => toggleFavorite(p.id)}
               />
@@ -71,7 +70,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onNavigate }) => {
         </motion.div>
       </main>
 
-      <FloatingActions onList={() => onNavigate("/list-item")} onProfile={() => onNavigate("/profile")} />
+      <FloatingActions />
     </div>
   )
 }

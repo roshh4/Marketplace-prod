@@ -1,16 +1,19 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { Search, User } from 'lucide-react'
+import { Search, User, LogOut } from 'lucide-react'
+import { useMarketplace } from '@/components/context/MarketplaceContext'
+import { useRouter } from 'next/navigation'
 
 interface HeaderProps {
   query: string
   setQuery: (s: string) => void
-  onNavigate: (r: string) => void
 }
 
-const Header: React.FC<HeaderProps> = ({ query, setQuery, onNavigate }) => {
+const Header: React.FC<HeaderProps> = ({ query, setQuery }) => {
   const headerRef = useRef<HTMLDivElement | null>(null)
+  const { setUser } = useMarketplace()
+  const router = useRouter()
   
   useEffect(() => {
     const onScroll = () => {
@@ -21,6 +24,22 @@ const Header: React.FC<HeaderProps> = ({ query, setQuery, onNavigate }) => {
     window.addEventListener("scroll", onScroll)
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
+
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to logout?')) {
+      // Clear user data from context
+      setUser(null)
+      
+      // Clear localStorage
+      localStorage.removeItem('cm_user_v1')
+      localStorage.removeItem('google_access_token')
+      localStorage.removeItem('google_refresh_token')
+      localStorage.removeItem('google_user_info')
+      
+      // Redirect to login page
+      router.push('/')
+    }
+  }
 
   return (
     <div ref={headerRef} className="sticky top-0 z-40 bg-white/3 backdrop-blur-md" style={{ borderBottom: '1px solid rgb(134, 139, 156)' }}>
@@ -39,8 +58,15 @@ const Header: React.FC<HeaderProps> = ({ query, setQuery, onNavigate }) => {
               className="bg-transparent outline-none ml-2 w-full text-sm" 
             />
           </div>
-          <button onClick={() => onNavigate("/profile")} className="p-2 rounded-full bg-white/5">
+          <button onClick={() => router.push("/profile")} className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
             <User size={16} />
+          </button>
+          <button 
+            onClick={handleLogout} 
+            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            title="Logout"
+          >
+            <LogOut size={16} />
           </button>
         </div>
       </div>
