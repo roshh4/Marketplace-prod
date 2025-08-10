@@ -15,6 +15,7 @@ export type Product = {
 export type UserType = {
   id: string
   name: string
+  email?: string
   avatar?: string
   year?: string
   department?: string

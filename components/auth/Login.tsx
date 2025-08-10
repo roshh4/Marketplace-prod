@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User } from 'lucide-react'
+import { User, Mail, LogOut, Chrome } from 'lucide-react'
 import { useMarketplace } from '@/components/context/MarketplaceContext'
 import GlassCard from '@/components/ui/GlassCard'
 import Spinner from '@/components/ui/Spinner'
 import { uid } from '@/lib/utils'
+import { generateGoogleAuthUrl } from '@/lib/googleAuth'
 
 interface LoginProps {
   onLogin: () => void
@@ -31,14 +32,44 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     phoneNumber: ''
   })
 
-  const collegeName = "Rajalakshmi Engineering College"
+  const [googleAccounts, setGoogleAccounts] = useState<Array<{
+    email: string
+    name: string
+    picture: string
+  }>>([])
+  const [selectedGoogleAccount, setSelectedGoogleAccount] = useState<{
+    email: string
+    name: string
+    picture: string
+  } | null>(null)
 
   const handleSignInClick = (provider: string) => {
-    if (provider === 'gmail') {
+    if (provider === 'google') {
+      handleGoogleSignIn()
+    } else if (provider === 'gmail') {
       setShowGmailForm(true)
     } else {
       setShowForm(true)
     }
+  }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      // Redirect to Google OAuth
+      const authUrl = generateGoogleAuthUrl()
+      window.location.href = authUrl
+    } catch (error) {
+      console.error('Google Sign-In error:', error)
+    }
+  }
+
+  const handleGoogleAccountSelect = (account: typeof googleAccounts[0]) => {
+    setSelectedGoogleAccount(account)
+    setFormData(prev => ({
+      ...prev,
+      fullName: account.name
+    }))
+    setShowForm(true)
   }
 
   const handleGmailSubmit = async (e: React.FormEvent) => {
@@ -69,9 +100,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       updateUser({ 
         id: uid("u"), 
         name: formData.fullName || "Avinash S.", 
-        avatar: undefined, 
+        avatar: selectedGoogleAccount?.picture || undefined, 
         year: formData.year, 
-        department: formData.department || "CSE" 
+        department: formData.department || "CSE"
       })
       setLoading(false)
       onLogin()
@@ -116,15 +147,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <p className="font-semibold">Sign in</p>
                     <div className="flex gap-3">
                       {[
-                        { name: "Google", onClick: () => handleSignInClick("google") },
-                        { name: "Microsoft", onClick: () => handleSignInClick("microsoft") },
-                        { name: "Gmail", onClick: () => handleSignInClick("gmail") },
+                        { name: "Google", onClick: () => handleSignInClick("google"), icon: <Chrome size={16} />, className: "bg-white/6 hover:bg-white/8" },
+                        { name: "Microsoft", onClick: () => handleSignInClick("microsoft"), icon: <User size={16} />, className: "bg-white/6 hover:bg-white/8" },
+                        { name: "Gmail", onClick: () => handleSignInClick("gmail"), icon: <Mail size={16} />, className: "bg-white/6 hover:bg-white/8" },
                       ].map((p) => (
                         <button
                           key={p.name}
                           onClick={p.onClick}
-                          className="flex-1 py-2 rounded-lg bg-white/6 hover:bg-white/8 transition-colors flex items-center justify-center gap-2">
-                          <User size={16} /> <span className="text-sm">{p.name}</span>
+                          className={`flex-1 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${p.className}`}>
+                          {p.icon} <span className="text-sm">{p.name}</span>
                         </button>
                       ))}
                     </div>
@@ -143,7 +174,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
         
         <AnimatePresence mode="wait">
-          {!showForm && !showGmailForm ? (
+          {!showForm && !showGmailForm && googleAccounts.length === 0 ? (
             <motion.div 
               key="tour"
               initial={{ scale: 0.98, opacity: 0 }} 
@@ -161,6 +192,51 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <li>• Real-time chat simulation with sellers.</li>
                     <li>• List items with drag & drop upload.</li>
                   </ul>
+                </div>
+              </div>
+            </motion.div>
+          ) : googleAccounts.length > 0 && !showForm ? (
+            <motion.div
+              key="google-accounts"
+              initial={{ scale: 0.98, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.98, opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full"
+            >
+              <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+                <div className="p-6 bg-gradient-to-b from-white/3 to-transparent">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold">Choose Google Account</h3>
+                    <button
+                      onClick={() => {
+                        setGoogleAccounts([])
+                        setSelectedGoogleAccount(null)
+                      }}
+                      className="p-2 rounded-md bg-white/6 hover:bg-white/10 transition-colors"
+                    >
+                      <LogOut size={16} />
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {googleAccounts.map((account, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleGoogleAccountSelect(account)}
+                        className="w-full p-3 rounded-lg bg-white/6 hover:bg-white/10 transition-colors flex items-center gap-3"
+                      >
+                        <img 
+                          src={account.picture} 
+                          alt={account.name}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div className="text-left">
+                          <div className="font-medium">{account.name}</div>
+                          <div className="text-sm opacity-70">{account.email}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -240,7 +316,19 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             >
               <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/5">
                 <div className="p-6 bg-gradient-to-b from-white/3 to-transparent">
-                  <h3 className="text-lg font-bold mb-4">Student Information</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold">Student Information</h3>
+                    {selectedGoogleAccount && (
+                      <div className="flex items-center gap-2">
+                        <img 
+                          src={selectedGoogleAccount.picture} 
+                          alt={selectedGoogleAccount.name}
+                          className="w-6 h-6 rounded-full"
+                        />
+                        <span className="text-sm opacity-70">{selectedGoogleAccount.email}</span>
+                      </div>
+                    )}
+                  </div>
                   <form onSubmit={handleFormSubmit} className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold mb-2">Full Name</label>
