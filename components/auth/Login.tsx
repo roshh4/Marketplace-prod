@@ -9,7 +9,12 @@ import Spinner from '@/components/ui/Spinner'
 import { uid } from '@/lib/utils'
 import { generateGoogleAuthUrl } from '@/lib/googleAuth'
 
-const Login: React.FC = () => {
+// Add type for props
+interface LoginProps {
+  onLogin?: () => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const { updateUser } = useMarketplace()
   const [loading, setLoading] = useState(false)
   const [showGmailForm, setShowGmailForm] = useState(false)
@@ -40,6 +45,7 @@ const Login: React.FC = () => {
       callbackUrl.searchParams.set('microsoft_user', 'true')
       callbackUrl.searchParams.set('user_info', JSON.stringify(msUserInfo))
       
+      if (onLogin) onLogin();
       window.location.href = callbackUrl.toString()
     } else {
       // For demo user, redirect to callback page with demo data
@@ -54,6 +60,7 @@ const Login: React.FC = () => {
       callbackUrl.searchParams.set('demo_user', 'true')
       callbackUrl.searchParams.set('user_info', JSON.stringify(demoUserInfo))
       
+      if (onLogin) onLogin();
       window.location.href = callbackUrl.toString()
     }
   }
@@ -94,6 +101,7 @@ const Login: React.FC = () => {
         callbackUrl.searchParams.set('gmail_user', 'true')
         callbackUrl.searchParams.set('user_info', JSON.stringify(gmailUserInfo))
         
+        if (onLogin) onLogin();
         window.location.href = callbackUrl.toString()
       }, 1000)
     }
