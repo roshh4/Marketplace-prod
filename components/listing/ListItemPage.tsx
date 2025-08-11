@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { ArrowLeft, X } from 'lucide-react'
 import { useMarketplace } from '@/components/context/MarketplaceContext'
 import { Product } from '@/types'
@@ -23,6 +23,7 @@ const ListItemPage: React.FC<ListItemPageProps> = ({ onDone }) => {
   const [tagInput, setTagInput] = useState("")
   const [images, setImages] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const onDrop = (files: FileList | null) => {
     if (!files) return
@@ -87,8 +88,10 @@ const ListItemPage: React.FC<ListItemPageProps> = ({ onDone }) => {
                     e.preventDefault()
                     onDrop(e.dataTransfer.files)
                   }}
-                  className="mt-2 border-dashed border-2 border-white/6 rounded-md p-4 text-center">
-                  <input type="file" multiple accept="image/*" onChange={(e) => onDrop(e.target.files)} className="hidden" />
+                  className="mt-2 border-dashed border-2 border-white/6 rounded-md p-4 text-center cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={(e) => onDrop(e.target.files)} className="hidden" />
                   <div className="text-sm opacity-70">Drag & drop or click to upload (max 6)</div>
                   <div className="mt-3 grid grid-cols-4 gap-2">
                     {images.map((img, i) => (

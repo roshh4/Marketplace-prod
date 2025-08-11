@@ -26,22 +26,29 @@ type MarketplaceContextType = {
 const MarketplaceContext = createContext<MarketplaceContextType | null>(null)
 
 function useLocalStorage<T>(key: string, initial: T) {
-  const [state, setState] = useState<T>(() => {
-    if (typeof window === 'undefined') return initial
-    try {
-      const raw = localStorage.getItem(key)
-      return raw ? (JSON.parse(raw) as T) : initial
-    } catch (e) {
-      return initial
-    }
-  })
-  
+  const [state, setState] = useState<T>(initial)
+  const [hasHydrated, setHasHydrated] = useState(false)
+
+  // Hydrate from localStorage after mount
   useEffect(() => {
     if (typeof window === 'undefined') return
     try {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        setState(JSON.parse(raw) as T)
+      }
+    } catch {}
+    setHasHydrated(true)
+  }, [key])
+  
+  // Persist to localStorage only after hydration
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!hasHydrated) return
+    try {
       localStorage.setItem(key, JSON.stringify(state))
     } catch {}
-  }, [key, state])
+  }, [key, state, hasHydrated])
   
   return [state, setState] as const
 }

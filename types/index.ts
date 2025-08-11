@@ -19,6 +19,7 @@ export type UserType = {
   avatar?: string
   year?: string
   department?: string
+  isAdmin?: boolean
 }
 
 export type Message = {

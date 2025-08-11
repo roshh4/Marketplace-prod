@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Heart, Share2 } from 'lucide-react'
+import { Heart, Share2, Trash2 } from 'lucide-react'
 import { Product } from '@/types'
 import { useRouter } from 'next/navigation'
 import { useState, useRef } from 'react'
@@ -11,9 +11,11 @@ interface ProductCardProps {
   product: Product
   isFavorited: boolean
   onToggleFavorite: () => void
+  isAdmin?: boolean
+  onDeleteProduct?: () => void
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, isFavorited, onToggleFavorite }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, isFavorited, onToggleFavorite, isAdmin, onDeleteProduct }) => {
   const router = useRouter()
   const [isShareOpen, setIsShareOpen] = useState(false)
   const shareButtonRef = useRef<HTMLButtonElement>(null)
@@ -41,6 +43,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isFavorited, onToggl
       style={{ border: '1px solid rgb(50, 56, 68)' }}
       onClick={handleProductClick}
     >
+      {isAdmin && (
+        <button
+          onClick={e => { e.stopPropagation(); onDeleteProduct && onDeleteProduct(); }}
+          className="absolute top-2 left-2 z-10 p-1.5 bg-red-500/80 hover:bg-red-600 text-white rounded-full shadow-lg"
+          title="Delete product"
+        >
+          <Trash2 size={14} />
+        </button>
+      )}
       <div className="h-72 rounded-md overflow-hidden mb-3 bg-black/20 grid place-items-center">
         <img src={product.images[0]} alt={product.title} className="h-full w-full object-cover" />
       </div>

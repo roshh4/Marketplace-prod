@@ -8,15 +8,17 @@ import { placeholderImage, nowIso } from '@/lib/utils'
 import Header from './Header'
 import ProductCard from './ProductCard'
 import FloatingActions from './FloatingActions'
+import { LogOut, Trash2 } from 'lucide-react'
 
 interface MarketplaceProps {
   onOpenChat: (chatId: string) => void
 }
 
 const Marketplace: React.FC<MarketplaceProps> = ({ onOpenChat }) => {
-  const { products, setProducts, favorites, toggleFavorite } = useMarketplace()
+  const { products, setProducts, favorites, toggleFavorite, user } = useMarketplace()
   const [query, setQuery] = useState("")
   const [filtered, setFiltered] = useState<Product[]>(products)
+  const isAdmin = Boolean(user?.isAdmin)
 
   useEffect(() => {
     const q = query.trim().toLowerCase()
@@ -44,16 +46,18 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onOpenChat }) => {
     }
   }, [products.length, setProducts])
 
+  const handleDeleteProduct = (id: string) => {
+    setProducts(products.filter((p) => p.id !== id))
+  }
+
   return (
     <div className="min-h-screen pb-24">
-              <Header query={query} setQuery={setQuery} />
-
+      <Header query={query} setQuery={setQuery} />
       <main className="max-w-7xl mx-auto px-4 md:px-8 pt-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">Explore Marketplace</h2>
           <div className="text-sm opacity-80">Results: {filtered.length}</div>
         </div>
-
         <motion.div layout className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {filtered.length === 0 ? (
             <div className="col-span-full p-8 text-center opacity-80">No products found — try another search.</div>
@@ -64,12 +68,13 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onOpenChat }) => {
                 product={p} 
                 isFavorited={favorites.includes(p.id)}
                 onToggleFavorite={() => toggleFavorite(p.id)}
+                isAdmin={isAdmin}
+                onDeleteProduct={() => handleDeleteProduct(p.id)}
               />
             ))
           )}
         </motion.div>
       </main>
-
       <FloatingActions />
     </div>
   )

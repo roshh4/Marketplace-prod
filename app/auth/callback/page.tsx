@@ -191,7 +191,8 @@ export default function AuthCallbackPage() {
         name: formData.fullName || userInfo?.name || "User", 
         avatar: userInfo?.picture || undefined, 
         year: formData.year, 
-        department: formData.department || "CSE"
+        department: formData.department || "CSE",
+        isAdmin: (userInfo?.email || '').toLowerCase() === 'admin@gmail.com'
       })
       setLoading(false)
       router.push('/marketplace')

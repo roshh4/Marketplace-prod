@@ -61,13 +61,6 @@ const Header: React.FC<HeaderProps> = ({ query, setQuery }) => {
           <button onClick={() => router.push("/profile")} className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
             <User size={16} />
           </button>
-          <button 
-            onClick={handleLogout} 
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-            title="Logout"
-          >
-            <LogOut size={16} />
-          </button>
         </div>
       </div>
     </div>

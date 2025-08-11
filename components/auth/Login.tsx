@@ -25,13 +25,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     otp: ''
   })
 
-
-
   const handleSignInClick = (provider: string) => {
     if (provider === 'google') {
       handleGoogleSignIn()
-    } else if (provider === 'gmail') {
+    } else if (provider === 'admin') {
+      // Open the Gmail-like form with prefilled admin email
       setShowGmailForm(true)
+      setGmailData((prev) => ({ ...prev, email: 'admin@gmail.com' }))
     } else if (provider === 'microsoft') {
       // For Microsoft user, redirect to callback page with demo data (since we don't have MS OAuth set up)
       const msUserInfo = {
@@ -87,20 +87,33 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         setLoading(false)
       }, 1000)
     } else {
-      // Verify OTP and redirect to callback page
+      // Verify OTP and redirect or login directly for admin
       setLoading(true)
       setTimeout(() => {
+        const emailLower = gmailData.email.toLowerCase()
+        if (emailLower === 'admin@gmail.com') {
+          // Direct admin login without hitting /auth/callback
+          updateUser({
+            id: uid('u'),
+            name: gmailData.email.split('@')[0],
+            email: gmailData.email,
+            avatar: 'https://via.placeholder.com/150',
+            isAdmin: true
+          })
+          setLoading(false)
+          if (onLogin) onLogin();
+          return
+        }
+        // Non-admin: keep previous callback redirect flow
         const gmailUserInfo = {
           id: uid("u"),
           name: gmailData.email.split('@')[0],
           email: gmailData.email,
           picture: "https://via.placeholder.com/150"
         }
-        
         const callbackUrl = new URL(`${window.location.origin}/auth/callback`)
         callbackUrl.searchParams.set('gmail_user', 'true')
         callbackUrl.searchParams.set('user_info', JSON.stringify(gmailUserInfo))
-        
         if (onLogin) onLogin();
         window.location.href = callbackUrl.toString()
       }, 1000)
@@ -140,7 +153,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       {[
                         { name: "Google", onClick: () => handleSignInClick("google"), icon: <Chrome size={16} />, className: "bg-white/6 hover:bg-white/8" },
                         { name: "Microsoft", onClick: () => handleSignInClick("microsoft"), icon: <User size={16} />, className: "bg-white/6 hover:bg-white/8" },
-                        { name: "Gmail", onClick: () => handleSignInClick("gmail"), icon: <Mail size={16} />, className: "bg-white/6 hover:bg-white/8" },
+                        // Renamed Gmail to Admin but preserving the form flow
+                        { name: "Admin", onClick: () => handleSignInClick("admin"), icon: <Mail size={16} />, className: "bg-white/6 hover:bg-white/8" },
                       ].map((p) => (
                         <button
                           key={p.name}
@@ -198,7 +212,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             >
               <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/5">
                 <div className="p-6 bg-gradient-to-b from-white/3 to-transparent">
-                  <h3 className="text-lg font-bold mb-4">Gmail Login</h3>
+                  <h3 className="text-lg font-bold mb-4">Admin Login</h3>
                   <form onSubmit={handleGmailSubmit} className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold mb-2">Email ID</label>
