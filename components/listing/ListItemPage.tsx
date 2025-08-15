@@ -97,7 +97,13 @@ const ListItemPage: React.FC<ListItemPageProps> = ({ onDone }) => {
                     {images.map((img, i) => (
                       <div key={i} className="relative">
                         <img src={img} className="h-24 w-full object-cover rounded-md" />
-                        <button onClick={() => removeImg(i)} className="absolute top-1 right-1 p-1 bg-white/7 rounded-full">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            removeImg(i)
+                          }} 
+                          className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors duration-200 z-10"
+                        >
                           <X size={12} />
                         </button>
                       </div>
